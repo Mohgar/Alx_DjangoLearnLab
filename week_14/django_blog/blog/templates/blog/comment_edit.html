@@ -1,7 +1,0 @@
-<h2>Edit Comment</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Update Comment</button>
-</form>
-<a href="{% url 'post_detail' comment.post.pk %}">Back to Post</a>
