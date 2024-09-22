@@ -1,0 +1,32 @@
+<h2>{{ post.title }}</h2>
+<p>{{ post.content }}</p>
+<a href="{% url 'post_update' post.pk %}">Edit</a>
+<a href="{% url 'post_delete' post.pk %}">Delete</a>
+<a href="{% url 'post_list' %}">Back to Posts</a>
+<!-- blog/templates/blog/post_detail.html -->
+<h2>{{ post.title }}</h2>
+<p>{{ post.content }}</p>
+
+<h3>Comments</h3>
+<ul>
+    {% for comment in comments %}
+        <li>
+            <strong>{{ comment.author }}:</strong> {{ comment.content }} <em>({{ comment.created_at }})</em>
+            {% if comment.author == user %}
+                <a href="{% url 'comment_edit' post.pk comment.id %}">Edit</a>
+                <form action="{% url 'comment_delete' post.pk comment.id %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit">Delete</button>
+                </form>
+            {% endif %}
+        </li>
+    {% endfor %}
+</ul>
+
+<h3>Leave a Comment</h3>
+<form method="post">
+    {% csrf_token %}
+    {{ comment_form.as_p }}
+    <button type="submit">Submit</button>
+</form>
+<a href="{% url 'post_list' %}">Back to Posts</a>
