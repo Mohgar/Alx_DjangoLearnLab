@@ -20,7 +20,7 @@ class LoginView(generics.GenericAPIView):
         return Response({'token': token.key})
 
 class UserView(APIView):
-    permission_classes = [IsAuthenticated]  # Ensure user is authenticated
+    permission_classes = [permissions.IsAuthenticated]  # Ensure user is authenticated
 
     def get(self, request):
         serializer = UserSerializers(request.user)  # Serialize user data
