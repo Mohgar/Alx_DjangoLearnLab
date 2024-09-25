@@ -6,11 +6,7 @@ import sys
 
 def main():
     """Run administrative tasks."""
-<<<<<<< HEAD
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'django_blog.settings')
-=======
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'social_media_api.settings')
->>>>>>> 51ba732 (add serializers and views)
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
