@@ -1,6 +1,6 @@
 # posts/views.py
 
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, generics
 from .models import Post, Comment, Like
 from .serializers import PostSerializer, CommentSerializer
 
@@ -15,6 +15,15 @@ class PostViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+
+class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        pk = self.kwargs.get('pk')  # Get the primary key from the URL
+        return generics.get_object_or_404(Post, pk=pk)  # Retrieve the post or return 404 if not found
 
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
