@@ -27,3 +27,11 @@ class CommentViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         serializer.save(author=self.request.user)  # Optional, to keep author consistent
 
+
+class FeedView(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        followed_users = user.followers.all()  # Get users that the current user follows
+        return Post.objects.filter(author__in=followed_users).order_by('-created_at')  # Get posts from followed users
