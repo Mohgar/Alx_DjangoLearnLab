@@ -21,5 +21,11 @@ class Comment(models.Model):
     updated_at = models.DateTimeField(auto_now_add=True)
 
 
+class Like(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    post = models.ForeignKey('Post', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        unique_together = ('user', 'post')  # Prevent multiple likes by the same user on a post
 # Create your models here.
