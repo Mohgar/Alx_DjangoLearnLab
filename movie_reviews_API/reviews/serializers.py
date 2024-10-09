@@ -8,9 +8,9 @@ class MovieSerializers(serializers.ModelSerializer):
         model = Movie
         fields = ['title', 'description', 'release_date']
         extra_kwargs = {
-            'title': {'required': True},  # Movie Title required
+            'title': {'required': True},         # Movie Title required
             'description': {'required': False},  # Description is optional
-            'release_date': {'required': True},  # Make Release Date required
+            'release_date': {'required': True},  # Release Date required
         }
 
 
@@ -21,7 +21,7 @@ class ReviewsSerializers(serializers.ModelSerializer):
         fields = ['movie_title', 'user_id', 'rating', 'review_content', 'created_date' ]
         read_only_fields = ['created_date']
         extra_kwargs = {
-            'movie_title': {'required': True},  # Movie Title required
+            'movie_title': {'required': True},     # Movie Title required
             'review_content': {'required': True},  # Review Content required
         }
 
