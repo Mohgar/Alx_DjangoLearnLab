@@ -2,10 +2,12 @@ from .serializers import (
     MovieSerializer,
     ReviewsSerializer,
     UserSerializer,
-    UserUpdateSerializer
+    UserUpdateSerializer,
+    ReviewLikeSerializer,
+    ReviewCommentSerializer
 )
 from django.contrib.auth.models import User
-from .models import Movie, Reviews
+from .models import Movie, Reviews,ReviewLike, ReviewComment
 from .permissions import IsAuthorOrReadOnly
 from rest_framework import generics, filters, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -33,7 +35,7 @@ class UserUpdateView(generics.UpdateAPIView):
     queryset = User.objects.all()  # Queryset for retrieving User objects
     serializer_class = UserUpdateSerializer  # Serializer for updating user data
     permission_classes = [IsAuthenticated]  # Only authenticated users can update their info
-
+    authentication_classes = [TokenAuthentication]  # Use token-based authentication
     def get_object(self):
         # Ensure that users can only update their own profile
         return self.request.user  # Returns the current logged-in user
@@ -133,3 +135,73 @@ class ReviewsRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView)
             return super().destroy(request, *args, **kwargs)  # Call the parent class's destroy method
         except NotFound:
             return Response({'error': 'Review not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class ReviewLikeListCreateView(generics.ListCreateAPIView):
+    # Define the view for listing and creating likes for reviews
+    queryset = ReviewLike.objects.all()  # Queryset to retrieve all ReviewLike instances
+    serializer_class = ReviewLikeSerializer  # Serializer for validating and serializing the like data
+    authentication_classes = [TokenAuthentication]  # Require token authentication for this view
+    permission_classes = [IsAuthenticated]  # Only allow access to authenticated users
+
+    def perform_create(self, serializer):
+        # Override the perform_create method to customize the behavior of creating a like
+        review_id = self.request.data.get('review')  # Get the review ID from the incoming request data
+
+        # Check if the user already liked the review
+        if ReviewLike.objects.filter(review_id=review_id, user=self.request.user).exists():
+            # If the user has already liked the review, return an error response
+            return Response({'detail': 'You have already liked this review.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Save the like instance with the current user
+        serializer.save(user=self.request.user)  # Save the like and associate it with the authenticated user
+
+
+class ReviewLikeRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    # Define the view for retrieving, updating, and deleting a specific like
+    queryset = ReviewLike.objects.all()  # Queryset to retrieve all ReviewLike instances
+    serializer_class = ReviewLikeSerializer  # Serializer for validating and serializing the like data
+    permission_classes = [IsAuthenticated]  # Only allow access to authenticated users
+    authentication_classes = [TokenAuthentication]  # Require token authentication for this view
+
+    def get_object(self):
+        # Override the get_object method to add custom permission checks
+        obj = super().get_object()  # Retrieve the like object using the parent class method
+        # Ensure that the requesting user is the owner of the like
+        if obj.user != self.request.user:
+            # If the user is not the owner, raise a permission denied error
+            raise PermissionDenied("You do not have permission to access this like.")
+        return obj  # Return the like object if the user is authorized
+
+
+class ReviewCommentListCreateView(generics.ListCreateAPIView):
+    # Define the view for listing and creating comments for reviews
+    queryset = ReviewComment.objects.all()  # Queryset to retrieve all ReviewComment instances
+    serializer_class = ReviewCommentSerializer  # Serializer for validating and serializing the comment data
+    permission_classes = [IsAuthenticated]  # Only allow access to authenticated users
+    authentication_classes = [TokenAuthentication]  # Require token authentication for this view
+
+    def perform_create(self, serializer):
+        # Override the perform_create method to customize the behavior of creating a comment
+        review_id = self.kwargs.get('review_id')  # Get the review ID from the URL parameters
+        # Save the comment instance with the current user and the associated review ID
+        serializer.save(user=self.request.user, review_id=review_id)  # Automatically set user and review
+
+
+class ReviewCommentRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    # Define the view for retrieving, updating, and deleting a specific comment
+    queryset = ReviewComment.objects.all()  # Queryset to retrieve all ReviewComment instances
+    serializer_class = ReviewCommentSerializer  # Serializer for validating and serializing the comment data
+    permission_classes = [IsAuthenticated]  # Only allow access to authenticated users
+    authentication_classes = [TokenAuthentication]  # Require token authentication for this view
+
+    def get_object(self):
+        # Override the get_object method to add custom permission checks
+        obj = super().get_object()  # Retrieve the comment object using the parent class method
+        # Ensure that the requesting user is the owner of the comment
+        if obj.user != self.request.user:
+            # If the user is not the owner, raise a permission denied error
+            raise PermissionDenied("You do not have permission to access this comment.")
+        return obj  # Return the comment object if the user is authorized
+
+

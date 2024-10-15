@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Movie, Reviews
+from .models import Movie, Reviews, ReviewLike, ReviewComment
 
 
 
@@ -76,6 +76,17 @@ class ReviewsSerializer(serializers.ModelSerializer):
 
         return data  # Return the validated rating
 
+# Serializer for the ReviewLike model
+class ReviewLikeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReviewLike  # Specify the model associated with this serializer
+        fields = ['id', 'review', 'user']
+
+# Serializer for the ReviewComment model
+class ReviewCommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReviewComment  # Specify the model associated with this serializer
+        fields = ['id', 'review', 'user', 'comment_content', 'created_date']
 
 
 
